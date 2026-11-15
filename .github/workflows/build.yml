@@ -20,10 +20,20 @@ jobs:
 
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
+      with:
+        packages: '' 
 
     - name: Accept Android SDK Licenses
       run: |
-        yes | sdkmanager --licenses || true
+        # مسیر دقیق sdkmanager را پیدا و مجوزها را تایید می‌کنیم
+        export SDKMANAGER_PATH=$(find $ANDROID_HOME -name sdkmanager | head -n 1)
+        yes | $SDKMANAGER_PATH --licenses || true
+        
+        # ساخت فایل‌های مجوز به صورت دستی برای دور زدن خطا
+        mkdir -p $ANDROID_HOME/licenses
+        echo -e "\n8933bad161af4b6a5b573652ffc7aaf3aee85a47" > $ANDROID_HOME/licenses/android-sdk-license
+        echo -e "\nd56f5187479451eabf01fb78af6dfcb131b33910" > $ANDROID_HOME/licenses/android-sdk-preview-license
+        echo -e "\n84831b9409646a918e30573bab4c9c91346d8abd" > $ANDROID_HOME/licenses/google-tv-preview-license
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
