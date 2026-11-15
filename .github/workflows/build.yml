@@ -37,16 +37,14 @@ jobs:
 
     - name: Build with Gradle
       run: |
-        # اگر فایل gradlew بود از خودش استفاده کن، وگرنه از Gradle نصب شده
+        # رفتن به پوشه اصلی پروژه
+        cd TMessagesProj
+        
+        # اجرای بیلد (اگر gradlew بود از خودش، وگرنه از سیستم)
         if [ -f gradlew ]; then
           chmod +x gradlew
           ./gradlew assembleDebug
-        elif [ -f TMessagesProj/gradlew ]; then
-          cd TMessagesProj
-          chmod +x gradlew
-          ./gradlew assembleDebug
         else
-          echo "gradlew not found, using system gradle"
           gradle assembleDebug
         fi
 
@@ -54,6 +52,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: Telegram-Debug-APK
-        path: |
-          TMessagesProj/build/outputs/apk/debug/*.apk
-          build/outputs/apk/debug/*.apk
+        path: TMessagesProj/build/outputs/apk/debug/*.apk
