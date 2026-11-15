@@ -32,24 +32,22 @@ jobs:
         echo -e "\nd56f5187479451eabf01fb78af6dfcb131b33910" > $ANDROID_HOME/licenses/android-sdk-preview-license
         echo -e "\n84831b9409646a918e30573bab4c9c91346d8abd" > $ANDROID_HOME/licenses/google-tv-preview-license
 
-    - name: Grant execute permission for gradlew
-      run: |
-        # اگر فایل gradlew وجود داشت، اجرایی کن
-        if [ -f gradlew ]; then chmod +x gradlew; fi
-        # اگر نبود، به پوشه TMessagesProj برو و اونجا چک کن
-        if [ -f TMessagesProj/gradlew ]; then chmod +x TMessagesProj/gradlew; fi
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v3
 
     - name: Build with Gradle
       run: |
-        # بررسی اینکه فایل در کدام پوشه است و از همان استفاده کن
+        # اگر فایل gradlew بود از خودش استفاده کن، وگرنه از Gradle نصب شده
         if [ -f gradlew ]; then
+          chmod +x gradlew
           ./gradlew assembleDebug
         elif [ -f TMessagesProj/gradlew ]; then
-          cd TMessagesProj && ./gradlew assembleDebug
-        else
-          echo "gradlew not found! Trying to use system gradle..."
-          gradle wrapper
+          cd TMessagesProj
+          chmod +x gradlew
           ./gradlew assembleDebug
+        else
+          echo "gradlew not found, using system gradle"
+          gradle assembleDebug
         fi
 
     - name: Upload APK
