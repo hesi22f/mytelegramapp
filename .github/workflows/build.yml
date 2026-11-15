@@ -37,11 +37,7 @@ jobs:
 
     - name: Find and Build
       run: |
-        # چاپ کردن لیست فایل‌ها برای عیب‌یابی در لاگ‌ها
-        echo "=== لیست فایل‌های فعلی ==="
-        ls -la
-        
-        # پیدا کردن مسیر فایل gradlew در هر کجای مخزن
+        # پیدا کردن فایل gradlew در عمق‌های مختلف پوشه
         GRADLEW_PATH=$(find . -name "gradlew" -type f | head -n 1)
         
         if [ -z "$GRADLEW_PATH" ]; then
