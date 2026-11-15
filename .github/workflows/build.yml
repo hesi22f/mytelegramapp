@@ -25,24 +25,37 @@ jobs:
 
     - name: Accept Android SDK Licenses
       run: |
-        # مسیر دقیق sdkmanager را پیدا و مجوزها را تایید می‌کنیم
         export SDKMANAGER_PATH=$(find $ANDROID_HOME -name sdkmanager | head -n 1)
         yes | $SDKMANAGER_PATH --licenses || true
-        
-        # ساخت فایل‌های مجوز به صورت دستی برای دور زدن خطا
         mkdir -p $ANDROID_HOME/licenses
         echo -e "\n8933bad161af4b6a5b573652ffc7aaf3aee85a47" > $ANDROID_HOME/licenses/android-sdk-license
         echo -e "\nd56f5187479451eabf01fb78af6dfcb131b33910" > $ANDROID_HOME/licenses/android-sdk-preview-license
         echo -e "\n84831b9409646a918e30573bab4c9c91346d8abd" > $ANDROID_HOME/licenses/google-tv-preview-license
 
     - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
+      run: |
+        # اگر فایل gradlew وجود داشت، اجرایی کن
+        if [ -f gradlew ]; then chmod +x gradlew; fi
+        # اگر نبود، به پوشه TMessagesProj برو و اونجا چک کن
+        if [ -f TMessagesProj/gradlew ]; then chmod +x TMessagesProj/gradlew; fi
 
     - name: Build with Gradle
-      run: ./gradlew assembleDebug
+      run: |
+        # بررسی اینکه فایل در کدام پوشه است و از همان استفاده کن
+        if [ -f gradlew ]; then
+          ./gradlew assembleDebug
+        elif [ -f TMessagesProj/gradlew ]; then
+          cd TMessagesProj && ./gradlew assembleDebug
+        else
+          echo "gradlew not found! Trying to use system gradle..."
+          gradle wrapper
+          ./gradlew assembleDebug
+        fi
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: Telegram-Debug-APK
-        path: TMessagesProj/build/outputs/apk/debug/*.apk
+        path: |
+          TMessagesProj/build/outputs/apk/debug/*.apk
+          build/outputs/apk/debug/*.apk
