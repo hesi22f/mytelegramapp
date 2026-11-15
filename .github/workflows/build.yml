@@ -35,21 +35,29 @@ jobs:
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v3
 
-    - name: Build with Gradle
+    - name: Find and Build
       run: |
-        # رفتن به پوشه اصلی پروژه
-        cd TMessagesProj
+        # چاپ کردن لیست فایل‌ها برای عیب‌یابی در لاگ‌ها
+        echo "=== لیست فایل‌های فعلی ==="
+        ls -la
         
-        # اجرای بیلد (اگر gradlew بود از خودش، وگرنه از سیستم)
-        if [ -f gradlew ]; then
+        # پیدا کردن مسیر فایل gradlew در هر کجای مخزن
+        GRADLEW_PATH=$(find . -name "gradlew" -type f | head -n 1)
+        
+        if [ -z "$GRADLEW_PATH" ]; then
+          echo "gradlew پیدا نشد! استفاده از Gradle سیستم..."
+          gradle assembleDebug
+        else
+          echo "فایل gradlew در مسیر $GRADLEW_PATH پیدا شد."
+          GRADLEW_DIR=$(dirname "$GRADLEW_PATH")
+          cd "$GRADLEW_DIR"
           chmod +x gradlew
           ./gradlew assembleDebug
-        else
-          gradle assembleDebug
         fi
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: Telegram-Debug-APK
-        path: TMessagesProj/build/outputs/apk/debug/*.apk
+        path: |
+          **/build/outputs/apk/debug/*.apk
